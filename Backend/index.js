@@ -15,7 +15,7 @@ app.use(express.json());
 app.use(cors());
 
 // MongoDB connection with proper error handling and retry mechanism
-const dbUri = process.env.MONGODB_URI || "mongodb://localhost:27017/Placements";
+const dbUri = process.env.MONGODB_URI || "mongodb+srv://aryanm3124:aWWDPdvXbR4khKML@cluster0.ywimhqt.mongodb.net/Placements";
 
 const connectWithRetry = () => {
   console.log('Attempting to connect to MongoDB...');
