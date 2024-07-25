@@ -1,0 +1,50 @@
+/* PersonDisplay.css */
+
+.person-display {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    background-color: #f9f9f9;
+    min-height: 100vh;
+}
+
+.person-details {
+    text-align: center;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    padding: 20px;
+    max-width: 600px;
+    width: 100%;
+}
+
+.person-image {
+    border-radius: 50%;
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    margin-bottom: 15px;
+}
+
+.person-name {
+    margin: 0;
+    font-size: 24px;
+    color: #333;
+}
+
+.person-info {
+    margin-top: 10px;
+    text-align: left;
+    line-height: 1.6;
+}
+
+.person-info p {
+    margin: 5px 0;
+    font-size: 16px;
+}
+
+.person-info strong {
+    color: #007bff;
+}
+

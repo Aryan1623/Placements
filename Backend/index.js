@@ -2,10 +2,7 @@ const port = 4000;
 const express = require("express");
 const app = express();
 const mongoose = require("mongoose");
-const multer = require("multer");
-const path = require("path");
 const cors = require("cors");
-const fs = require('fs');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 require('dotenv').config();
@@ -34,137 +31,72 @@ const connectWithRetry = () => {
 
 connectWithRetry();
 
+// User schema and model
+const userSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  email: { type: String, required: true, unique: true },
+  password: { type: String, required: true },
+});
+
+const User = mongoose.model('User', userSchema);
+
 // Default route
 app.get("/", (req, res) => {
   res.send("Express App is Running");
 });
 
+// Signup route
+app.post("/signup", async (req, res) => {
+  const { name, email, password } = req.body;
 
-
-
-
-const userSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: true,
-  },
-  email: {
-    type: String,
-    unique: true,
-    required: true,
-  },
-  password: {
-    type: String,
-    required: true,
-  },
-  cartData: {
-    type: Object,
-    default: {},
-  },
-  date: {
-    type: Date,
-    default: Date.now,
-  }
-});
-
-const Users = mongoose.model('Users', userSchema);
-
-app.post('/signup', async (req, res) => {
   try {
-    const { name, email, password } = req.body;
-
-    if (!name || !email || !password) {
-      return res.status(400).json({ success: false, message: "All fields are required" });
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ success: false, errors: "Email already exists" });
     }
 
-    let check = await Users.findOne({ email });
-    if (check) {
-      return res.status(400).json({ success: false, message: "Existing user found with same email id" });
-    }
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const newUser = new User({ name, email, password: hashedPassword });
+    await newUser.save();
 
-    let cart = {};
-    for (let i = 0; i < 300; i++) {
-      cart[i] = 0;
-    }
+    const token = jwt.sign({ id: newUser._id, name: newUser.name }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
-    const hashedPassword = await bcrypt.hash(req.body.password, 10);
-
-    const user = new Users({
-      name: req.body.name,
-      email: req.body.email,
-      password: hashedPassword,
-      cartData: cart,
-    });
-
-    await user.save();
-
-    const data = {
-      user: {
-        id: user._id,
-      }
-    };
-
-    const token = jwt.sign(data, process.env.JWT_SECRET || 'secret_ecom'); // Use environment variable for secret
-    res.json({ success: true, token });
+    res.status(201).json({ success: true, token });
   } catch (error) {
-    console.error("Error signing up user:", error);
-    res.status(500).json({ success: false, message: "Internal server error" });
+    console.error("Signup error:", error);
+    res.status(500).json({ success: false, errors: "Server error" });
   }
 });
 
-app.post('/login', async (req, res) => {
+// Login route
+app.post("/login", async (req, res) => {
+  const { name, email, password } = req.body;
+
   try {
-    const user = await Users.findOne({ email: req.body.email });
-    if (user) {
-      const passCompare = await bcrypt.compare(req.body.password, user.password);
-      if (passCompare) {
-        const data = {
-          user: {
-            id: user._id
-          }
-        };
-        const token = jwt.sign(data, process.env.JWT_SECRET || 'secret_ecom'); // Use environment variable for secret
-        res.json({ success: true, token });
-      } else {
-        res.status(400).json({ success: false, errors: "Wrong Password" });
-      }
-    } else {
-      res.status(400).json({ success: false, errors: "Wrong Email Id" });
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).json({ success: false, errors: "Invalid email or password" });
     }
+
+    const isPasswordCorrect = await bcrypt.compare(password, user.password);
+    if (!isPasswordCorrect) {
+      return res.status(400).json({ success: false, errors: "Invalid email or password" });
+    }
+
+    if (user.name !== name) {
+      return res.status(400).json({ success: false, errors: "Invalid name for the provided email" });
+    }
+
+    const token = jwt.sign({ id: user._id, name: user.name }, process.env.JWT_SECRET, { expiresIn: '1h' });
+
+    res.status(200).json({ success: true, token });
   } catch (error) {
-    console.error("Error logging in user:", error);
-    res.status(500).json({ success: false, message: "Internal server error" });
+    console.error("Login error:", error);
+    res.status(500).json({ success: false, errors: "Server error" });
   }
 });
 
-const fetchUser = async (req,res,next) =>{
-   const token = req.header('auth-token');
-   if(!token){
-    res.status(401).send({errors: "Please authenticate using valid token"})
-   }
-   else{
-    try{
-      const data = jwt.verify(token,'secret_ecom');
-      req.user = data.user;
-      next();
-    }catch(error){
-      res.status(401).send({errors: "please authenticate using a valid token"})
-    }
-   }
-}
-
-
-
-// Start server
-app.listen(port, (error) => {
-  if (!error) {
-    console.log("Server running on port " + port);
-  } else {
-    console.log("Error: " + error);
-  }
+// Start the server
+app.listen(port, () => {
+  console.log(`Server is running on port ${port}`);
 });
-
-
-
-
-

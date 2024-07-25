@@ -1,0 +1,34 @@
+.Placements-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    flex-direction: column; /* For stacking on smaller screens */
+}
+
+.image1 {
+    width: 80vw;
+    height: auto;
+    max-width: 100%;
+    margin: 10px 0;
+    object-fit: cover;
+}
+
+/* Media queries for responsiveness */
+@media (max-width: 768px) {
+    .Placements-container {
+        flex-direction: row; /* For horizontal alignment on larger screens */
+        flex-wrap: wrap; /* Allow wrapping of items */
+    }
+
+    .image1 {
+        width: 40vw; /* Adjust width for larger screens */
+    }
+}
+
+@media (max-width: 1024px) {
+    .image1 {
+        width: 80vw; /* Further adjust width for even larger screens */
+    }
+}
+

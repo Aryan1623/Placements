@@ -1,0 +1,40 @@
+.top-recruiters {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    padding: 20px;
+    background-color: #f5f5f5; /* Optional: add a background color */
+}
+
+.top-recruiters img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 10px; /* Optional: add some rounded corners */
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1); /* Optional: add some shadow */
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .top-recruiters {
+        padding: 15px;
+    }
+}
+
+@media (max-width: 992px) {
+    .top-recruiters {
+        padding: 10px;
+    }
+}
+
+@media (max-width: 768px) {
+    .top-recruiters {
+        padding: 5px;
+    }
+}
+
+@media (max-width: 576px) {
+    .top-recruiters {
+        padding: 0;
+    }
+}
